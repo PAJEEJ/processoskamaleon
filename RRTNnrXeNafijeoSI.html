@@ -1,0 +1,761 @@
+<html><head><base href="https://kamaleon-system.com/processos-v6/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema Kamaleon - Controle de Processos com Aprovação</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f0f0f0;
+  }
+  h1 {
+    color: #4a4a4a;
+    text-align: center;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    display: none;
+  }
+  #login-container {
+    text-align: center;
+  }
+  #login-container input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  #login-container button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  #login-container button:hover {
+    background-color: #45a049;
+  }
+  .etapas {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .etapa {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin: 5px;
+    min-width: 100px;
+  }
+  .etapa:hover {
+    background-color: #d0d0d0;
+  }
+  .etapa.active {
+    background-color: #4CAF50;
+    color: white;
+  }
+  #produto-form {
+    margin-bottom: 20px;
+  }
+  #produto-form input, #produto-form textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  .medidas-container {
+    display: flex;
+    gap: 10px;
+  }
+  .medidas-container input {
+    flex: 1;
+  }
+  #produto-form button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  #produto-form button:hover {
+    background-color: #45a049;
+  }
+  #produtos-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  .produto-item {
+    background-color: #f9f9f9;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 4px;
+  }
+  .produto-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .produto-detalhes {
+    margin-top: 10px;
+  }
+  .expand-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .expand-btn:hover {
+    background-color: #45a049;
+  }
+  .produto-fotos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .produto-foto {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .produto-item button {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 5px;
+  }
+  .produto-item button:hover {
+    background-color: #0b7dda;
+  }
+  #modal, #edit-modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.9);
+  }
+  #modal-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    max-height: 80vh;
+    object-fit: contain;
+  }
+  #modal-close, #edit-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  #edit-modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+  }
+  .data-saida {
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 3px;
+  }
+  .verde { background-color: #4CAF50; color: white; }
+  .amarelo { background-color: #FFC107; color: black; }
+  .vermelho { background-color: #F44336; color: white; }
+</style>
+</head>
+<body>
+  <div id="login-container">
+    <h2>Login</h2>
+    <form id="login-form">
+      <input type="text" id="username" placeholder="Username" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
+  <div class="container">
+    <h1>Sistema Kamaleon - Controle de Processos com Aprovação</h1>
+    
+    <div id="user-panel"></div>
+
+    <div class="etapas">
+      <div class="etapa active" data-etapa="venda">Venda</div>
+      <div class="etapa" data-etapa="desenho">Desenho</div>
+      <div class="etapa" data-etapa="aprovacao">Aprovação</div>
+      <div class="etapa" data-etapa="corte">Corte</div>
+      <div class="etapa" data-etapa="producao">Produção</div>
+      <div class="etapa" data-etapa="embalagem">Embalagem</div>
+    </div>
+    
+    <div id="venda-form">
+      <form id="produto-form">
+        <input type="text" id="nome" placeholder="Nome do produto" required>
+        <textarea id="descricao" placeholder="Descrição do produto" required></textarea>
+        <div class="medidas-container">
+          <input type="number" id="largura" placeholder="Largura (cm)" step="0.1" required>
+          <input type="number" id="altura" placeholder="Altura (cm)" step="0.1" required>
+        </div>
+        <input type="number" id="preco" placeholder="Preço" step="0.01" required>
+        <input type="date" id="data-saida" required>
+        <input type="text" id="tipo-envio" placeholder="Tipo de Envio" required>
+        <input type="number" id="valor-pago" placeholder="Valor Pago" step="0.01" required>
+        <input type="file" id="fotos" accept="image/*" multiple>
+        <button type="submit">Adicionar Produto</button>
+      </form>
+    </div>
+    
+    <ul id="produtos-list"></ul>
+
+    <div id="user-management" style="display: none;">
+      <h2>User Management</h2>
+      <form id="user-registration-form">
+        <input type="text" id="new-username" placeholder="Username" required>
+        <input type="password" id="new-password" placeholder="Password" required>
+        <select id="new-role" required>
+          <option value="">Select Role</option>
+          <option value="vendedor">Vendedor</option>
+          <option value="administrador">Administrador</option>
+          <option value="producao">Produção</option>
+          <option value="designer">Designer</option>
+        </select>
+        <input type="text" id="new-name" placeholder="Full Name" required>
+        <button type="submit">Add User</button>
+      </form>
+      <h3>Existing Users</h3>
+      <ul id="users-list"></ul>
+    </div>
+  </div>
+
+  <div id="modal">
+    <span id="modal-close">&times;</span>
+    <img id="modal-content" alt="Foto ampliada do produto">
+  </div>
+
+  <div id="edit-modal">
+    <div id="edit-modal-content">
+      <span id="edit-modal-close">&times;</span>
+      <h2>Editar Produto</h2>
+      <form id="edit-form">
+        <input type="text" id="edit-nome" placeholder="Nome do produto" required>
+        <textarea id="edit-descricao" placeholder="Descrição do produto" required></textarea>
+        <div class="medidas-container">
+          <input type="number" id="edit-largura" placeholder="Largura (cm)" step="0.1" required>
+          <input type="number" id="edit-altura" placeholder="Altura (cm)" step="0.1" required>
+        </div>
+        <input type="number" id="edit-preco" placeholder="Preço" step="0.01" required>
+        <input type="date" id="edit-data-saida" required>
+        <input type="text" id="edit-tipo-envio" placeholder="Tipo de Envio" required>
+        <input type="number" id="edit-valor-pago" placeholder="Valor Pago" step="0.01" required>
+        <input type="file" id="edit-fotos" accept="image/*" multiple>
+        <button type="submit">Salvar Alterações</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let users = [
+      { username: 'admin', password: '1234a', role: 'administrador', name: 'Admin' }
+    ];
+    let salesHistory = {};
+
+    function login(event) {
+      event.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      const user = users.find(u => u.username === username && u.password === password);
+      if (user) {
+        currentUser = user;
+        document.getElementById('login-container').style.display = 'none';
+        document.querySelector('.container').style.display = 'block';
+        if (user.role === 'administrador') {
+          document.getElementById('user-management').style.display = 'block';
+        }
+        updateUIForUserRole();
+      } else {
+        alert('Invalid username or password');
+      }
+    }
+
+    const etapas = ['venda', 'desenho', 'aprovacao', 'corte', 'producao', 'embalagem'];
+    let produtos = [];
+    let produtoEditando = null;
+
+    function adicionarProduto(event) {
+      event.preventDefault();
+      const nome = document.getElementById('nome').value;
+      const descricao = document.getElementById('descricao').value;
+      const largura = parseFloat(document.getElementById('largura').value);
+      const altura = parseFloat(document.getElementById('altura').value);
+      const tamanho = (largura * altura) / 10000;
+      const preco = parseFloat(document.getElementById('preco').value);
+      const dataSaida = document.getElementById('data-saida').value;
+      const tipoEnvio = document.getElementById('tipo-envio').value;
+      const valorPago = parseFloat(document.getElementById('valor-pago').value);
+      const fotosInput = document.getElementById('fotos');
+      
+      const produto = {
+        id: Date.now(),
+        nome,
+        descricao,
+        largura,
+        altura,
+        tamanho,
+        preco,
+        dataSaida,
+        tipoEnvio,
+        valorPago,
+        podeEmbalar: false,
+        etapa: 'venda',
+        fotos: []
+      };
+
+      const filePromises = Array.from(fotosInput.files).map(file => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.readAsDataURL(file);
+        });
+      });
+
+      Promise.all(filePromises).then(results => {
+        produto.fotos = results;
+        produtos.push(produto);
+        
+        const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+        if (!salesHistory[currentUser.username]) {
+          salesHistory[currentUser.username] = {};
+        }
+        if (!salesHistory[currentUser.username][month]) {
+          salesHistory[currentUser.username][month] = { totalValue: 0, totalSize: 0 };
+        }
+        salesHistory[currentUser.username][month].totalValue += produto.preco;
+        salesHistory[currentUser.username][month].totalSize += produto.tamanho;
+
+        atualizarListaProdutos();
+        event.target.reset();
+        updateUserPanelData();
+      });
+    }
+
+    function atualizarListaProdutos() {
+      const lista = document.getElementById('produtos-list');
+      lista.innerHTML = '';
+      
+      const etapaAtual = document.querySelector('.etapa.active').dataset.etapa;
+
+      const visibleEtapas = currentUser.role === 'producao' ? ['corte', 'producao', 'embalagem'] : [etapaAtual];
+
+      produtos.filter(produto => visibleEtapas.includes(produto.etapa)).forEach(produto => {
+        const li = document.createElement('li');
+        li.className = 'produto-item';
+        const priceInfo = currentUser.role !== 'producao' ? `- R$ ${produto.preco.toFixed(2)}` : '';
+        const isPaid = produto.preco <= produto.valorPago ? 'Pago' : 'Pendente';
+        li.innerHTML = `
+          <div class="produto-info">
+            <span>${produto.nome}</span>
+            <span>${produto.tipoEnvio}</span>
+            <span>${isPaid}</span>
+            <span>Pode Embalar: <input type="checkbox" ${produto.podeEmbalar ? 'checked' : ''} onchange="togglePodeEmbalar(${produto.id}, this.checked)" ${(currentUser.role === 'administrador' || currentUser.role === 'vendedor') ? '' : 'disabled'}></span>
+            ${currentUser.role !== 'producao' ? `<span>R$ ${produto.valorPago.toFixed(2)} / ${produto.preco.toFixed(2)}</span>` : ''}
+            <button class="expand-btn">Expandir</button>
+            <button class="advance-btn" onclick="avancarEtapa(${produto.id})">Avançar</button>
+          </div>
+          <div class="produto-detalhes" style="display: none;">
+            <p>${produto.descricao}</p>
+            <p>Tamanho: ${produto.largura}cm x ${produto.altura}cm</p>
+            <p>Data de Saída: ${produto.dataSaida}</p>
+            <div class="produto-fotos">
+              ${produto.fotos.map(foto => `<img src="${foto}" alt="Foto do produto" class="produto-foto" onclick="abrirModal('${foto}')">`).join('')}
+            </div>
+            <div>
+              ${currentUser.role === 'administrador' ? `<button onclick="editarProduto(${produto.id})">Editar</button>` : ''}
+              <button onclick="avancarEtapa(${produto.id}, -1)">Voltar</button>
+            </div>
+          </div>
+        `;
+        lista.appendChild(li);
+      });
+
+      // Add event listeners for expand buttons
+      document.querySelectorAll('.expand-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const detalhes = this.closest('.produto-item').querySelector('.produto-detalhes');
+          detalhes.style.display = detalhes.style.display === 'none' ? 'block' : 'none';
+          this.textContent = detalhes.style.display === 'none' ? 'Expandir' : 'Recolher';
+        });
+      });
+    }
+
+    function mostrarTodosProdutos() {
+      const lista = document.getElementById('produtos-list');
+      lista.innerHTML = '';
+      
+      produtos.forEach(produto => {
+        const li = document.createElement('li');
+        li.className = 'produto-item';
+        const priceInfo = currentUser.role !== 'producao' ? `- R$ ${produto.preco.toFixed(2)}` : '';
+        const isPaid = produto.preco <= produto.valorPago ? 'Pago' : 'Pendente';
+        li.innerHTML = `
+          <div class="produto-info">
+            <span>${produto.nome}</span>
+            <span>${produto.tipoEnvio}</span>
+            <span>${isPaid}</span>
+            <span>Pode Embalar: <input type="checkbox" ${produto.podeEmbalar ? 'checked' : ''} onchange="togglePodeEmbalar(${produto.id}, this.checked)" ${(currentUser.role === 'administrador' || currentUser.role === 'vendedor') ? '' : 'disabled'}></span>
+            ${currentUser.role !== 'producao' ? `<span>R$ ${produto.valorPago.toFixed(2)} / ${produto.preco.toFixed(2)}</span>` : ''}
+            <span>${produto.etapa}</span>
+            <div>
+              ${currentUser.role === 'administrador' ? `<button onclick="editarProduto(${produto.id})">Editar</button>` : ''}
+              <button onclick="avancarEtapa(${produto.id}, 1)">Avançar</button>
+              <button onclick="avancarEtapa(${produto.id}, -1)">Voltar</button>
+            </div>
+          </div>
+          <div class="produto-fotos">
+            ${produto.fotos.map(foto => `<img src="${foto}" alt="Foto do produto" class="produto-foto" onclick="abrirModal('${foto}')">`).join('')}
+          </div>
+        `;
+        lista.appendChild(li);
+      });
+    }
+
+    function avancarEtapa(id, direction = 1) {
+      const produto = produtos.find(p => p.id === id);
+      const etapaAtualIndex = etapas.indexOf(produto.etapa);
+      const novoIndex = etapaAtualIndex + direction;
+
+      if (novoIndex >= 0 && novoIndex < etapas.length) {
+        const novaEtapa = etapas[novoIndex];
+        let canAdvance = false;
+
+        switch (currentUser.role) {
+          case 'vendedor':
+            canAdvance = (produto.etapa === 'venda' && novaEtapa === 'desenho') ||
+                         (produto.etapa === 'aprovacao' && (novaEtapa === 'desenho' || novaEtapa === 'corte'));
+            break;
+          case 'designer':
+            canAdvance = produto.etapa === 'desenho' &&
+                         (novaEtapa === 'aprovacao' || novaEtapa === 'venda');
+            break;
+          case 'producao':
+            canAdvance = (produto.etapa === 'producao' && novaEtapa === 'embalagem') ||
+                         (produto.etapa === 'embalagem' && novaEtapa === 'producao');
+            break;
+          case 'administrador':
+            canAdvance = true;
+            break;
+        }
+
+        if (canAdvance) {
+          if (currentUser.role === 'vendedor' && produto.etapa === 'aprovacao' && novaEtapa === 'desenho') {
+            const descricao = prompt('Por favor, descreva o que precisa melhorar:');
+            if (descricao) {
+              produto.descricaoMelhoria = descricao;
+            } else {
+              return; // Don't advance if no description is provided
+            }
+          }
+          produto.etapa = novaEtapa;
+          atualizarListaProdutos();
+        } else {
+          alert('Você não tem permissão para avançar este processo.');
+        }
+      }
+    }
+
+    function mudarEtapa(event) {
+      if (event.target.classList.contains('etapa')) {
+        document.querySelectorAll('.etapa').forEach(el => el.classList.remove('active'));
+        event.target.classList.add('active');
+        atualizarListaProdutos();
+        document.getElementById('venda-form').style.display = event.target.dataset.etapa === 'venda' ? 'block' : 'none';
+      }
+    }
+
+    function abrirModal(src) {
+      const modal = document.getElementById('modal');
+      const modalImg = document.getElementById('modal-content');
+      modal.style.display = "block";
+      modalImg.src = src;
+    }
+
+    function editarProduto(id) {
+      if (currentUser.role === 'producao') {
+        alert('Você não tem permissão para editar produtos.');
+        return;
+      }
+      produtoEditando = produtos.find(p => p.id === id);
+      document.getElementById('edit-nome').value = produtoEditando.nome;
+      document.getElementById('edit-descricao').value = produtoEditando.descricao;
+      document.getElementById('edit-largura').value = produtoEditando.largura;
+      document.getElementById('edit-altura').value = produtoEditando.altura;
+      document.getElementById('edit-preco').value = produtoEditando.preco;
+      document.getElementById('edit-data-saida').value = produtoEditando.dataSaida;
+      document.getElementById('edit-tipo-envio').value = produtoEditando.tipoEnvio;
+      document.getElementById('edit-valor-pago').value = produtoEditando.valorPago;
+      document.getElementById('edit-modal').style.display = 'block';
+    }
+
+    function salvarEdicao(event) {
+      event.preventDefault();
+      produtoEditando.nome = document.getElementById('edit-nome').value;
+      produtoEditando.descricao = document.getElementById('edit-descricao').value;
+      produtoEditando.largura = parseFloat(document.getElementById('edit-largura').value);
+      produtoEditando.altura = parseFloat(document.getElementById('edit-altura').value);
+      produtoEditando.tamanho = (produtoEditando.largura * produtoEditando.altura) / 10000;
+      produtoEditando.preco = parseFloat(document.getElementById('edit-preco').value);
+      produtoEditando.dataSaida = document.getElementById('edit-data-saida').value;
+      produtoEditando.tipoEnvio = document.getElementById('edit-tipo-envio').value;
+      produtoEditando.valorPago = parseFloat(document.getElementById('edit-valor-pago').value);
+
+      const fotosInput = document.getElementById('edit-fotos');
+      if (fotosInput.files.length > 0) {
+        const filePromises = Array.from(fotosInput.files).map(file => {
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(file);
+          });
+        });
+
+        Promise.all(filePromises).then(results => {
+          produtoEditando.fotos = results;
+          atualizarListaProdutos();
+          document.getElementById('edit-modal').style.display = 'none';
+        });
+      } else {
+        atualizarListaProdutos();
+        document.getElementById('edit-modal').style.display = 'none';
+      }
+    }
+
+    function registerUser(event) {
+      event.preventDefault();
+      const username = document.getElementById('new-username').value;
+      const password = document.getElementById('new-password').value;
+      const role = document.getElementById('new-role').value;
+      const name = document.getElementById('new-name').value;
+
+      if (users.some(u => u.username === username)) {
+        alert('Username already exists');
+        return;
+      }
+
+      users.push({ username, password, role, name });
+      updateUsersList();
+      event.target.reset();
+    }
+
+    function updateUsersList() {
+      const usersList = document.getElementById('users-list');
+      usersList.innerHTML = '';
+      users.forEach((user, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          ${user.name} (${user.username}) - ${user.role}
+          <br>Password: ${user.password}
+          <button onclick="deleteUser(${index})">Delete</button>
+        `;
+        usersList.appendChild(li);
+      });
+    }
+
+    function deleteUser(index) {
+      if (confirm('Are you sure you want to delete this user?')) {
+        users.splice(index, 1);
+        updateUsersList();
+      }
+    }
+
+    function logout() {
+      currentUser = null;
+      document.getElementById('login-container').style.display = 'block';
+      document.querySelector('.container').style.display = 'none';
+      document.getElementById('user-management').style.display = 'none';
+      document.getElementById('login-form').reset();
+    }
+
+    function updateUIForUserRole() {
+      const userPanel = document.getElementById('user-panel');
+      
+      switch(currentUser.role) {
+        case 'vendedor':
+          userPanel.innerHTML = `
+            <h2>Painel do Vendedor: ${currentUser.name}</h2>
+            <p>Vendas no mês: <span id="vendas-mes">0</span></p>
+            <p>Valor total vendido: R$ <span id="valor-total">0.00</span></p>
+            <p>Metros quadrados vendidos: <span id="metros-vendidos">0.00</span> m²</p>
+            <button onclick="showSalesHistory()">Ver Histórico de Vendas</button>
+            <div id="sales-history"></div>
+          `;
+          break;
+        case 'administrador':
+          userPanel.innerHTML = `
+            <h2>Painel do Administrador</h2>
+            <p>Faturamento total: R$ <span id="faturamento-total">0.00</span></p>
+            <button onclick="document.getElementById('user-management').style.display='block'">Manage Users</button>
+          `;
+          break;
+        case 'producao':
+          userPanel.innerHTML = `
+            <h2>Painel de Produção</h2>
+            <p>Metros quadrados totais no mês: <span id="metros-totais">0.00</span> m²</p>
+          `;
+          break;
+        case 'designer':
+          userPanel.innerHTML = `
+            <h2>Painel do Designer: ${currentUser.name}</h2>
+            <p>Desenhos realizados no mês: <span id="desenhos-mes">0</span></p>
+          `;
+          break;
+      }
+      
+      userPanel.innerHTML += `<button onclick="logout()">Logout</button>`;
+      updateUserPanelData();
+    }
+
+    function displaySalesHistory() {
+      const salesHistoryDiv = document.getElementById('sales-history');
+      salesHistoryDiv.innerHTML = '<h3>Histórico de Vendas</h3>';
+      
+      const userHistory = salesHistory[currentUser.username];
+      if (userHistory) {
+        const table = document.createElement('table');
+        table.innerHTML = `
+          <tr>
+            <th>Mês</th>
+            <th>Valor Total (R$)</th>
+            <th>Tamanho Total (m²)</th>
+          </tr>
+        `;
+        
+        Object.entries(userHistory).sort((a, b) => b[0].localeCompare(a[0])).forEach(([month, data]) => {
+          const row = table.insertRow();
+          row.innerHTML = `
+            <td>${month}</td>
+            <td>R$ ${data.totalValue.toFixed(2)}</td>
+            <td>${data.totalSize.toFixed(2)}</td>
+          `;
+        });
+        
+        salesHistoryDiv.appendChild(table);
+      } else {
+        salesHistoryDiv.innerHTML += '<p>Nenhum histórico de vendas disponível.</p>';
+      }
+    }
+
+    function showSalesHistory() {
+      displaySalesHistory();
+      document.getElementById('sales-history').style.display = 'block';
+    }
+
+    function updateUserPanelData() {
+      if (currentUser.role === 'vendedor') {
+        const currentMonth = new Date().toISOString().slice(0, 7);
+        const monthData = salesHistory[currentUser.username]?.[currentMonth] || { totalValue: 0, totalSize: 0 };
+        
+        document.getElementById('vendas-mes').textContent = produtos.filter(p => p.etapa === 'venda').length.toString();
+        document.getElementById('valor-total').textContent = monthData.totalValue.toFixed(2);
+        document.getElementById('metros-vendidos').textContent = monthData.totalSize.toFixed(2);
+      } else if (currentUser.role === 'administrador') {
+        const totalValue = Object.values(salesHistory).reduce((sum, userHistory) => 
+          sum + Object.values(userHistory).reduce((userSum, monthData) => userSum + monthData.totalValue, 0), 0);
+        document.getElementById('faturamento-total').textContent = totalValue.toFixed(2);
+      } else if (currentUser.role === 'producao') {
+        const totalSize = Object.values(salesHistory).reduce((sum, userHistory) => 
+          sum + Object.values(userHistory).reduce((userSum, monthData) => userSum + monthData.totalSize, 0), 0);
+        document.getElementById('metros-totais').textContent = totalSize.toFixed(2);
+      }
+    }
+
+    function getDataSaidaClass(dataSaida) {
+      const hoje = new Date();
+      const dataLimite = new Date(dataSaida);
+      const diffTime = dataLimite.getTime() - hoje.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays <= 1) return 'vermelho';
+      if (diffDays <= 2) return 'amarelo';
+      if (diffDays <= 3) return 'verde';
+      return '';
+    }
+
+    function formatDate(dateString) {
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+      return new Date(dateString).toLocaleDateString('pt-BR', options);
+    }
+
+    function togglePodeEmbalar(id, value) {
+      const produto = produtos.find(p => p.id === id);
+      if (produto && (currentUser.role === 'administrador' || currentUser.role === 'vendedor')) {
+        produto.podeEmbalar = value;
+        atualizarListaProdutos();
+      }
+    }
+
+    document.getElementById('login-form').addEventListener('submit', login);
+    document.getElementById('user-registration-form').addEventListener('submit', registerUser);
+    document.getElementById('produto-form').addEventListener('submit', adicionarProduto);
+    document.querySelector('.etapas').addEventListener('click', function(event) {
+      if (event.target.classList.contains('etapa')) {
+        mostrarTodosProdutos();
+      }
+    });
+    document.querySelector('.etapas').addEventListener('click', mudarEtapa);
+    document.getElementById('edit-form').addEventListener('submit', salvarEdicao);
+
+    document.getElementById('modal-close').onclick = function() {
+      document.getElementById('modal').style.display = "none";
+    };
+
+    document.getElementById('edit-modal-close').onclick = function() {
+      document.getElementById('edit-modal').style.display = "none";
+    };
+
+    window.onclick = function(event) {
+      if (event.target == document.getElementById('modal')) {
+        document.getElementById('modal').style.display = "none";
+      }
+      if (event.target == document.getElementById('edit-modal')) {
+        document.getElementById('edit-modal').style.display = "none";
+      }
+    };
+
+    document.getElementById('venda-form').style.display = 'block';
+    atualizarListaProdutos();
+    updateUsersList();
+  </script>
+</body>
+</html>
